@@ -1,6 +1,5 @@
 import { Link } from "react-router-dom";
 import { FileText, CheckCircle2 } from "lucide-react";
-import ImagePlaceholder from "../components/ImagePlaceholder";
 import profileOwner from "../assets/profile-owner.jpeg";
 import nibPdf from "../assets/dokumen-pendukung/NIB PT Raja Elektro Inc.pdf";
 import suratPernyataanPdf from "../assets/dokumen-pendukung/surat-pernyataan-perubahan-41250913120262573.pdf";
@@ -48,19 +47,19 @@ export default function AboutUs() {
         </div>
       </section>
 
-      <section className="py-12 pb-16 bg-white">
+      <section className="py-12 pb-16 bg-white overflow-x-hidden">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid lg:grid-cols-2 gap-16 items-center">
-            <div>
+          <div className="grid lg:grid-cols-2 gap-8 lg:gap-16 items-center">
+            <div className="min-w-0">
               <h2
                 className="text-2xl sm:text-3xl font-bold text-raja-navy mb-6"
-                data-aos="fade-right"
+                data-aos="fade-up"
               >
                 Siapa Kami
               </h2>
               <p
                 className="text-slate-600 mb-4"
-                data-aos="fade-right"
+                data-aos="fade-up"
                 data-aos-delay="100"
               >
                 <strong className="text-slate-800">
@@ -76,7 +75,7 @@ export default function AboutUs() {
               </p>
               <p
                 className="text-slate-600"
-                data-aos="fade-right"
+                data-aos="fade-up"
                 data-aos-delay="200"
               >
                 Dengan tagline{" "}
@@ -87,8 +86,8 @@ export default function AboutUs() {
                 bisnis dalam memenuhi kebutuhan pengadaan dan layanan pendukung.
               </p>
             </div>
-            <div className="relative" data-aos="fade-left" data-aos-delay="200">
-              <div className="w-96 rounded overflow-hidden border shadow-md border-slate-200 mx-auto">
+            <div className="relative min-w-0 flex justify-center lg:justify-end" data-aos="fade-up" data-aos-delay="200">
+              <div className="w-full max-w-96 rounded overflow-hidden border shadow-md border-slate-200">
                 <img
                   src={profileOwner}
                   alt="Profil"
