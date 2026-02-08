@@ -46,7 +46,7 @@ export default function ContactUs() {
 
   return (
     <>
-      <section className="relative py-24 bg-white overflow-hidden">
+      <section className="relative pt-32 pb-10 md:pb-24 bg-white overflow-hidden">
         <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <p className="text-raja-blue font-semibold text-sm uppercase tracking-wider text-center mb-2" data-aos="fade-up">
             Hubungi
