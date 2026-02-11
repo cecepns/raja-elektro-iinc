@@ -1,3 +1,4 @@
+import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import {
   Monitor,
@@ -9,12 +10,22 @@ import {
   ExternalLink,
 } from "lucide-react";
 import LayananBanner from "../assets/layanan-banner-2.png";
+import { API_BASE } from "../utils/api";
 
-const KATALOG_INAPROC = "https://katalog.inaproc.id/raja-elektro-inc";
-const KATALOG_SIPLAH =
+const ICON_MAP = {
+  Monitor,
+  Package,
+  ShoppingCart,
+  Users,
+  BookOpen,
+  Sparkles,
+};
+
+const DEFAULT_KATALOG_INAPROC = "https://katalog.inaproc.id/raja-elektro-inc";
+const DEFAULT_KATALOG_SIPLAH =
   "https://siplah.tokoladang.co.id/official-store/pt-raja-elektro-inc.77581?keyword=&sort=&etalase=0";
 
-const services = [
+const DEFAULT_SERVICES = [
   {
     title: "Konsultasi IT Support",
     desc: "Layanan konsultasi dan dukungan teknologi informasi untuk mendukung operasional dan digitalisasi bisnis Anda.",
@@ -23,13 +34,13 @@ const services = [
       "Perencanaan & implementasi",
       "Support berkelanjutan",
     ],
-    Icon: Monitor,
+    icon: "Monitor",
   },
   {
     title: "Pengadaan Barang & Jasa INAPROC",
     desc: "Pengadaan melalui sistem INAPROC untuk kebutuhan elektronik, mobiler, jasa IT Support, dan barang/jasa lainnya.",
     items: ["Elektronik", "Mobiler", "Jasa IT Support", "Barang & jasa lain"],
-    Icon: Package,
+    icon: "Package",
   },
   {
     title: "Pengadaan Barang & Jasa SIPLAH / TOKOLADANG",
@@ -40,7 +51,7 @@ const services = [
       "Jasa IT Support",
       "Katalog resmi e-katalog",
     ],
-    Icon: ShoppingCart,
+    icon: "ShoppingCart",
   },
   {
     title: "Pengadaan Jasa Outsourcing",
@@ -52,23 +63,68 @@ const services = [
       "Resepsionis",
       "Tenaga pendukung lain",
     ],
-    Icon: Users,
+    icon: "Users",
   },
   {
     title: "Biro Jasa Pendidikan Non Formal",
     desc: "Layanan di bidang pendidikan non formal dan pelatihan untuk peningkatan kompetensi SDM.",
-    Icon: BookOpen,
     items: [],
+    icon: "BookOpen",
   },
   {
     title: "Kebutuhan Lainnya",
     desc: "Solusi terpadu untuk berbagai kebutuhan pengadaan barang, jasa, dan konsultasi sesuai permintaan Anda.",
-    Icon: Sparkles,
     items: ["Kustomisasi layanan", "Konsultasi kebutuhan", "Penawaran khusus"],
+    icon: "Sparkles",
   },
 ];
 
+function mapServices(raw) {
+  const source = Array.isArray(raw?.services) ? raw.services : DEFAULT_SERVICES;
+  return source.map((item, index) => {
+    const Icon =
+      (item.icon && ICON_MAP[item.icon]) ||
+      ICON_MAP[DEFAULT_SERVICES[index]?.icon] ||
+      Monitor;
+    return {
+      title: item.title || "",
+      desc: item.desc || "",
+      items: Array.isArray(item.items) ? item.items : [],
+      Icon,
+    };
+  });
+}
+
 export default function Service() {
+  const [intro, setIntro] = useState(null);
+  const [services, setServices] = useState(mapServices(null));
+  const [catalogs, setCatalogs] = useState(null);
+
+  useEffect(() => {
+    fetch(`${API_BASE}/api/content/service_intro`)
+      .then((res) => (res.ok ? res.json() : null))
+      .then((data) => data && setIntro(data))
+      .catch(() => {});
+
+    fetch(`${API_BASE}/api/content/service_services`)
+      .then((res) => (res.ok ? res.json() : null))
+      .then((data) => setServices(mapServices(data)))
+      .catch(() => {});
+
+    fetch(`${API_BASE}/api/content/service_catalogs`)
+      .then((res) => (res.ok ? res.json() : null))
+      .then((data) => data && setCatalogs(data))
+      .catch(() => {});
+  }, []);
+
+  const introSubtitle = intro?.subtitle || "Layanan";
+  const introTitle = intro?.title || "Layanan Kami";
+  const introDescription =
+    intro?.description ||
+    "PT. RAJA ELEKTRO INC. bergerak di bidang Pengadaan Barang & Jasa dengan portofolio layanan yang lengkap untuk mendukung kebutuhan institusi dan bisnis.";
+
+  const KATALOG_INAPROC = catalogs?.inaprocUrl || DEFAULT_KATALOG_INAPROC;
+  const KATALOG_SIPLAH = catalogs?.siplahUrl || DEFAULT_KATALOG_SIPLAH;
   return (
     <>
       <section className="relative pt-32 pb-10 md:pb-24 bg-white overflow-hidden">
@@ -77,23 +133,21 @@ export default function Service() {
             className="text-raja-blue font-semibold text-sm uppercase tracking-wider text-center mb-2"
             data-aos="fade-up"
           >
-            Layanan
+            {introSubtitle}
           </p>
           <h1
             className="text-3xl sm:text-5xl font-bold text-raja-navy text-center mb-6"
             data-aos="fade-up"
             data-aos-delay="100"
           >
-            Layanan Kami
+            {introTitle}
           </h1>
           <p
             className="text-slate-600 text-center max-w-2xl mx-auto mb-10"
             data-aos="fade-up"
             data-aos-delay="200"
           >
-            PT. RAJA ELEKTRO INC. bergerak di bidang Pengadaan Barang & Jasa
-            dengan portofolio layanan yang lengkap untuk mendukung kebutuhan
-            institusi dan bisnis.
+            {introDescription}
           </p>
           <div
             className="max-w-4xl mx-auto"

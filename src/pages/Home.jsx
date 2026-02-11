@@ -1,38 +1,95 @@
+import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import {
+import { Monitor, Package, ShoppingCart, Users, ArrowRight } from "lucide-react";
+import HeroBgImage from "../assets/hero-banner.png";
+import MitraBanner from "../assets/mitra-banner.png";
+import { API_BASE } from "../utils/api";
+
+const ICON_MAP = {
   Monitor,
   Package,
   ShoppingCart,
   Users,
-  ArrowRight,
-} from "lucide-react";
-import HeroBgImage from "../assets/hero-banner.png";
-import MitraBanner from "../assets/mitra-banner.png";
+};
 
-const servicesPreview = [
-  {
-    title: "Konsultasi IT Support",
-    desc: "Dukungan dan konsultasi teknologi informasi profesional.",
-    Icon: Monitor,
-  },
-  {
-    title: "Pengadaan INAPROC",
-    desc: "Elektronik, mobiler, jasa IT Support melalui INAPROC.",
-    Icon: Package,
-  },
-  {
-    title: "Pengadaan SIPLAH",
-    desc: "Elektronik, mobiler, jasa IT via SIPLAH/TOKOLADANG.",
-    Icon: ShoppingCart,
-  },
-  {
-    title: "Outsourcing & Biro Jasa",
-    desc: "Satpam, CS, Driver, Resepsionis, pendidikan non formal.",
-    Icon: Users,
-  },
-];
+function mapServices(raw) {
+  if (!Array.isArray(raw)) return [];
+  return raw.map((item, index) => {
+    const Icon =
+      (item.icon && ICON_MAP[item.icon]) ||
+      (index === 0
+        ? Monitor
+        : index === 1
+        ? Package
+        : index === 2
+        ? ShoppingCart
+        : Users);
+    return {
+      title: item.title || "",
+      desc: item.desc || "",
+      Icon,
+    };
+  });
+}
 
 export default function Home() {
+  const [hero, setHero] = useState(null);
+  const [servicesPreview, setServicesPreview] = useState(null);
+  const [mitra, setMitra] = useState(null);
+  const [cta, setCta] = useState(null);
+
+  useEffect(() => {
+    fetch(`${API_BASE}/api/content/home_hero`)
+      .then((res) => (res.ok ? res.json() : null))
+      .then((data) => data && setHero(data))
+      .catch(() => {});
+
+    fetch(`${API_BASE}/api/content/home_services_preview`)
+      .then((res) => (res.ok ? res.json() : null))
+      .then((data) => data && setServicesPreview(mapServices(data)))
+      .catch(() => {});
+
+    fetch(`${API_BASE}/api/content/home_mitra`)
+      .then((res) => (res.ok ? res.json() : null))
+      .then((data) => data && setMitra(data))
+      .catch(() => {});
+
+    fetch(`${API_BASE}/api/content/home_cta`)
+      .then((res) => (res.ok ? res.json() : null))
+      .then((data) => data && setCta(data))
+      .catch(() => {});
+  }, []);
+
+  const heroSubtitle =
+    hero?.subtitle || "Your Business Solution";
+  const heroTitle =
+    hero?.title || "Pengadaan Barang & Jasa yang Terpercaya";
+  const heroHighlight =
+    hero?.highlight || "Terpercaya";
+  const heroDescription =
+    hero?.description ||
+    "PT. RAJA ELEKTRO INC. menyediakan solusi lengkap: konsultasi IT Support, pengadaan melalui INAPROC & SIPLAH, outsourcing, dan biro jasa pendidikan — satu pintu untuk kebutuhan bisnis Anda.";
+  const heroImage = hero?.imageUrl || HeroBgImage;
+
+  const layananTitle =
+    hero?.servicesSectionTitle || "Solusi Lengkap untuk Bisnis Anda";
+  const layananSubtitle =
+    hero?.servicesSectionSubtitle || "Layanan Kami";
+
+  const mitraTitle =
+    mitra?.title || "Mitra Pengadaan Terpercaya";
+  const mitraDescription =
+    mitra?.description ||
+    "Kami melayani pengadaan barang dan jasa melalui channel resmi INAPROC dan SIPLAH Toko Ladang, didukung tim IT dan layanan outsourcing yang siap mendukung operasional Anda.";
+  const mitraImage = mitra?.imageUrl || MitraBanner;
+
+  const ctaTitle =
+    cta?.title || "Siap Bekerja Sama?";
+  const ctaDescription =
+    cta?.description ||
+    "Tim kami siap membantu pengadaan barang & jasa, IT support, dan kebutuhan lainnya. Hubungi kami untuk konsultasi tanpa wajib.";
+  const ctaButtonText = cta?.buttonText || "Contact Us";
+
   return (
     <>
       <section className="relative min-h-[85vh] flex items-center bg-white overflow-hidden">
@@ -43,24 +100,22 @@ export default function Home() {
                 className="text-raja-blue font-semibold text-sm uppercase tracking-wider mb-4"
                 data-aos="fade-up"
               >
-                Your Business Solution
+                {heroSubtitle}
               </p>
               <h1
                 className="text-3xl sm:text-5xl lg:text-6xl font-extrabold text-raja-navy leading-tight mb-6"
                 data-aos="fade-up"
                 data-aos-delay="100"
               >
-                Pengadaan Barang & Jasa yang{" "}
-                <span className="text-raja-blue">Terpercaya</span>
+                {heroTitle.replace(heroHighlight, "")}
+                <span className="text-raja-blue"> {heroHighlight}</span>
               </h1>
               <p
                 className="text-lg text-slate-600 max-w-xl mb-8"
                 data-aos="fade-up"
                 data-aos-delay="200"
               >
-                PT. RAJA ELEKTRO INC. menyediakan solusi lengkap: konsultasi IT
-                Support, pengadaan melalui INAPROC & SIPLAH, outsourcing, dan
-                biro jasa pendidikan — satu pintu untuk kebutuhan bisnis Anda.
+                {heroDescription}
               </p>
               <div
                 className="flex flex-wrap gap-4"
@@ -88,7 +143,7 @@ export default function Home() {
             >
               <div className="relative w-full max-w-md aspect-square rounded-2xl bg-slate-100 flex items-center justify-center border border-slate-200 shadow-xl overflow-hidden">
                 <img
-                  src={HeroBgImage}
+                  src={heroImage}
                   alt="PT. RAJA ELEKTRO INC."
                   className="w-full h-full object-cover drop-shadow-lg"
                 />
@@ -104,17 +159,17 @@ export default function Home() {
             className="text-raja-blue font-semibold text-sm uppercase tracking-wider text-center mb-2"
             data-aos="fade-up"
           >
-            Layanan Kami
+            {layananSubtitle}
           </p>
           <h2
             className="text-3xl sm:text-4xl font-bold text-raja-navy text-center mb-14"
             data-aos="fade-up"
             data-aos-delay="100"
           >
-            Solusi Lengkap untuk Bisnis Anda
+            {layananTitle}
           </h2>
           <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
-            {servicesPreview.map((item, i) => (
+            {(servicesPreview || []).map((item, i) => (
               <div
                 key={item.title}
                 className="p-6 rounded-2xl bg-slate-50 border border-slate-100 hover:border-raja-blue/30 hover:shadow-lg hover:shadow-raja-blue/5 transition-all duration-300"
@@ -146,7 +201,7 @@ export default function Home() {
             <div className="order-2 lg:order-1" data-aos="fade-right">
               <div className="relative w-full mx-auto max-w-md aspect-square rounded-2xl bg-slate-100 flex items-center justify-center border border-slate-200 shadow-xl overflow-hidden">
                 <img
-                  src={MitraBanner}
+                  src={mitraImage}
                   alt="Mitra Pengadaan Terpercaya"
                   className="w-full h-full object-cover"
                 />
@@ -157,16 +212,14 @@ export default function Home() {
                 className="text-3xl sm:text-4xl font-bold text-raja-navy mb-6"
                 data-aos="fade-up"
               >
-                Mitra Pengadaan Terpercaya
+              {mitraTitle}
               </h2>
               <p
                 className="text-slate-600 mb-6"
                 data-aos="fade-up"
                 data-aos-delay="100"
               >
-                Kami melayani pengadaan barang dan jasa melalui channel resmi
-                INAPROC dan SIPLAH Toko Ladang, didukung tim IT dan layanan
-                outsourcing yang siap mendukung operasional Anda.
+              {mitraDescription}
               </p>
               <Link
                 to="/about-us"
@@ -188,15 +241,14 @@ export default function Home() {
               className="text-3xl sm:text-4xl font-bold text-raja-navy mb-6"
               data-aos="fade-up"
             >
-              Siap Bekerja Sama?
+              {ctaTitle}
             </h2>
             <p
               className="text-slate-600 mb-8"
               data-aos="fade-up"
               data-aos-delay="100"
             >
-              Tim kami siap membantu pengadaan barang & jasa, IT support, dan
-              kebutuhan lainnya. Hubungi kami untuk konsultasi tanpa wajib.
+              {ctaDescription}
             </p>
             <Link
               to="/contact-us"
@@ -204,7 +256,7 @@ export default function Home() {
               data-aos="fade-up"
               data-aos-delay="200"
             >
-              Contact Us
+              {ctaButtonText}
             </Link>
           </div>
         </div>

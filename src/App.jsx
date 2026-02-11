@@ -8,6 +8,7 @@ import Home from './pages/Home'
 import Service from './pages/Service'
 import AboutUs from './pages/AboutUs'
 import ContactUs from './pages/ContactUs'
+import Admin from './pages/Admin'
 
 export default function App() {
   useEffect(() => {
@@ -28,6 +29,7 @@ export default function App() {
           <Route path="/service" element={<Service />} />
           <Route path="/about-us" element={<AboutUs />} />
           <Route path="/contact-us" element={<ContactUs />} />
+          <Route path="/admin" element={<Admin />} />
         </Routes>
       </Layout>
     </>

@@ -1,23 +1,45 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { Mail, MapPin, Phone, Send } from 'lucide-react'
+import { API_BASE } from '../utils/api'
 
-const CONTACT = {
+const DEFAULT_CONTACT = {
+  companyName: 'PT. RAJA ELEKTRO INC.',
+  tagline: 'Your Business Solution',
   email: 'literasidigitaltbalai@gmail.com',
   phone: '082249445697',
   phoneLink: '6282249445697',
-  address: 'Jl. MT. Haryono No. 4B, Kelurahan Tanjungbalai, Kota Tanjungbalai, Provinsi Sumatera Utara, Kode Pos 21313',
+  address:
+    'Jl. MT. Haryono No. 4B, Kelurahan Tanjungbalai, Kota Tanjungbalai, Provinsi Sumatera Utara, Kode Pos 21313',
 }
 
-const SUBJECT_LABELS = {
-  pengadaan: 'Pengadaan Barang & Jasa',
-  'it-support': 'Konsultasi IT Support',
-  outsourcing: 'Outsourcing',
-  pendidikan: 'Biro Jasa Pendidikan',
-  lainnya: 'Lainnya',
-}
+const DEFAULT_SUBJECTS = [
+  { value: 'pengadaan', label: 'Pengadaan Barang & Jasa' },
+  { value: 'it-support', label: 'Konsultasi IT Support' },
+  { value: 'outsourcing', label: 'Outsourcing' },
+  { value: 'pendidikan', label: 'Biro Jasa Pendidikan' },
+  { value: 'lainnya', label: 'Lainnya' },
+]
 
 export default function ContactUs() {
   const [form, setForm] = useState({ name: '', email: '', company: '', subject: '', message: '' })
+  const [contact, setContact] = useState(DEFAULT_CONTACT)
+  const [subjects, setSubjects] = useState(DEFAULT_SUBJECTS)
+
+  useEffect(() => {
+    fetch(`${API_BASE}/api/content/contact_info`)
+      .then((res) => (res.ok ? res.json() : null))
+      .then((data) => data && setContact({ ...DEFAULT_CONTACT, ...data }))
+      .catch(() => {})
+
+    fetch(`${API_BASE}/api/content/contact_subjects`)
+      .then((res) => (res.ok ? res.json() : null))
+      .then((data) => {
+        if (Array.isArray(data?.subjects) && data.subjects.length > 0) {
+          setSubjects(data.subjects)
+        }
+      })
+      .catch(() => {})
+  }, [])
 
   const handleChange = (e) => {
     setForm((prev) => ({ ...prev, [e.target.name]: e.target.value }))
@@ -25,7 +47,11 @@ export default function ContactUs() {
 
   const handleSubmit = (e) => {
     e.preventDefault()
-    const subjectLabel = SUBJECT_LABELS[form.subject] || form.subject
+    const subjectMap = subjects.reduce((acc, item) => {
+      acc[item.value] = item.label
+      return acc
+    }, {})
+    const subjectLabel = subjectMap[form.subject] || form.subject
     const text = [
       `*Pesan dari Website Contact Us*`,
       '',
@@ -39,7 +65,7 @@ export default function ContactUs() {
     ]
       .filter(Boolean)
       .join('\n')
-    const url = `https://wa.me/${CONTACT.phoneLink}?text=${encodeURIComponent(text)}`
+    const url = `https://wa.me/${contact.phoneLink}?text=${encodeURIComponent(text)}`
     window.open(url, '_blank', 'noopener,noreferrer')
     setForm({ name: '', email: '', company: '', subject: '', message: '' })
   }
@@ -55,7 +81,8 @@ export default function ContactUs() {
             Contact Us
           </h1>
           <p className="text-slate-600 text-center max-w-2xl mx-auto" data-aos="fade-up" data-aos-delay="200">
-            Silakan isi formulir di bawah atau hubungi kami untuk konsultasi, penawaran pengadaan barang & jasa, IT support, outsourcing, dan kebutuhan lainnya.
+            Silakan isi formulir di bawah atau hubungi kami untuk konsultasi, penawaran pengadaan barang & jasa, IT
+            support, outsourcing, dan kebutuhan lainnya.
           </p>
         </div>
       </section>
@@ -125,11 +152,11 @@ export default function ContactUs() {
                     className="w-full px-4 py-3 rounded-xl border border-slate-300 focus:border-raja-blue focus:ring-2 focus:ring-raja-blue/20 outline-none transition bg-white"
                   >
                     <option value="">Pilih subjek</option>
-                    <option value="pengadaan">Pengadaan Barang & Jasa</option>
-                    <option value="it-support">Konsultasi IT Support</option>
-                    <option value="outsourcing">Outsourcing</option>
-                    <option value="pendidikan">Biro Jasa Pendidikan</option>
-                    <option value="lainnya">Lainnya</option>
+                    {subjects.map((item) => (
+                      <option key={item.value} value={item.value}>
+                        {item.label}
+                      </option>
+                    ))}
                   </select>
                 </div>
                 <div data-aos="fade-right" data-aos-delay="200">
@@ -165,28 +192,37 @@ export default function ContactUs() {
                 <div className="space-y-6" data-aos="fade-left" data-aos-delay="100">
                   <div className="p-5 rounded-xl bg-slate-50 border border-slate-200">
                     <p className="text-sm font-medium text-amber-600 mb-1">Perusahaan</p>
-                    <p className="text-slate-800 font-semibold">PT. RAJA ELEKTRO INC.</p>
-                    <p className="text-slate-600 text-sm mt-1">Your Business Solution</p>
+                    <p className="text-slate-800 font-semibold">{contact.companyName}</p>
+                    <p className="text-slate-600 text-sm mt-1">{contact.tagline}</p>
                   </div>
                   <div className="flex items-start gap-3 text-slate-600">
                     <Mail className="w-5 h-5 shrink-0 mt-0.5 text-amber-600" />
                     <div>
                       <p className="text-sm font-medium text-slate-800">Email</p>
-                      <a href={`mailto:${CONTACT.email}`} className="text-sm hover:text-raja-blue transition-colors">{CONTACT.email}</a>
+                      <a href={`mailto:${contact.email}`} className="text-sm hover:text-raja-blue transition-colors">
+                        {contact.email}
+                      </a>
                     </div>
                   </div>
                   <div className="flex items-start gap-3 text-slate-600">
                     <Phone className="w-5 h-5 shrink-0 mt-0.5 text-amber-600" />
                     <div>
                       <p className="text-sm font-medium text-slate-800">Telepon / WA</p>
-                      <a href={`https://wa.me/${CONTACT.phoneLink}`} target="_blank" rel="noopener noreferrer" className="text-sm hover:text-raja-blue transition-colors">{CONTACT.phone}</a>
+                      <a
+                        href={`https://wa.me/${contact.phoneLink}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-sm hover:text-raja-blue transition-colors"
+                      >
+                        {contact.phone}
+                      </a>
                     </div>
                   </div>
                   <div className="flex items-start gap-3 text-slate-600">
                     <MapPin className="w-5 h-5 shrink-0 mt-0.5 text-amber-600" />
                     <div>
                       <p className="text-sm font-medium text-slate-800">Alamat</p>
-                      <p className="text-sm">{CONTACT.address}</p>
+                      <p className="text-sm">{contact.address}</p>
                     </div>
                   </div>
                   {/* <div className="pt-4" data-aos="fade-left" data-aos-delay="200">

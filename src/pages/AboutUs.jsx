@@ -1,24 +1,69 @@
+import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { FileText, CheckCircle2 } from "lucide-react";
 import profileOwner from "../assets/profile-owner.jpeg";
 import nibPdf from "../assets/dokumen-pendukung/NIB PT Raja Elektro Inc.pdf";
 import suratPernyataanPdf from "../assets/dokumen-pendukung/surat-pernyataan-perubahan-41250913120262573.pdf";
 import suratSertifikatPdf from "../assets/dokumen-pendukung/surat-sertifikat-perubahan-41250913120262573.pdf";
+import { API_BASE } from "../utils/api";
 
-const highlights = [
+const DEFAULT_HIGHLIGHTS = [
   "Pengadaan Barang & Jasa terpercaya",
   "Konsultasi IT Support profesional",
   "Channel INAPROC, SIPLAH, TOKOLADANG",
   "Outsourcing & Biro Jasa Pendidikan",
 ];
 
-const documents = [
+const DEFAULT_DOCUMENTS = [
   { label: "NIB PT Raja Elektro Inc", href: nibPdf },
   { label: "Surat Pernyataan Perubahan", href: suratPernyataanPdf },
   { label: "Surat Sertifikat Perubahan", href: suratSertifikatPdf },
 ];
 
 export default function AboutUs() {
+  const [intro, setIntro] = useState(null);
+  const [who, setWho] = useState(null);
+  const [highlights, setHighlights] = useState(null);
+  const [docs, setDocs] = useState(null);
+
+  useEffect(() => {
+    fetch(`${API_BASE}/api/content/about_intro`)
+      .then((res) => (res.ok ? res.json() : null))
+      .then((data) => data && setIntro(data))
+      .catch(() => {});
+
+    fetch(`${API_BASE}/api/content/about_who`)
+      .then((res) => (res.ok ? res.json() : null))
+      .then((data) => data && setWho(data))
+      .catch(() => {});
+
+    fetch(`${API_BASE}/api/content/about_highlights`)
+      .then((res) => (res.ok ? res.json() : null))
+      .then((data) => data && setHighlights(Array.isArray(data.items) ? data.items : null))
+      .catch(() => {});
+
+    fetch(`${API_BASE}/api/content/about_documents`)
+      .then((res) => (res.ok ? res.json() : null))
+      .then((data) => data && setDocs(Array.isArray(data.documents) ? data.documents : null))
+      .catch(() => {});
+  }, []);
+
+  const introTitle = intro?.title || "About Us";
+  const introSubtitle = intro?.subtitle || "Tentang Kami";
+  const introDescription =
+    intro?.description ||
+    "PT. RAJA ELEKTRO INC. hadir sebagai mitra pengadaan barang & jasa serta solusi bisnis Anda.";
+
+  const whoTitle = who?.title || "Siapa Kami";
+  const whoParagraphs =
+    who?.paragraphs || [
+      "PT. RAJA ELEKTRO INC. adalah perusahaan yang bergerak di bidang Pengadaan Barang & Jasa. Kami menyediakan layanan konsultasi IT Support, pengadaan melalui INAPROC dan SIPLAH/TOKOLADANG (elektronik, mobiler, jasa IT Support, dan lainnya), pengadaan jasa outsourcing (Satpam, CS, Driver, Resepsionis), biro jasa pendidikan non formal, serta kebutuhan lain yang Anda butuhkan.",
+      'Dengan tagline "Your Business Solution", kami berkomitmen menjadi solusi terpercaya untuk institusi dan bisnis dalam memenuhi kebutuhan pengadaan dan layanan pendukung.',
+    ];
+
+  const highlightItems = highlights || DEFAULT_HIGHLIGHTS;
+  const documentItems = docs || DEFAULT_DOCUMENTS;
+
   return (
     <>
       <section className="relative pt-32 pb-10 md:pb-24 bg-white overflow-hidden">
@@ -27,22 +72,21 @@ export default function AboutUs() {
             className="text-raja-blue font-semibold text-sm uppercase tracking-wider text-center mb-2"
             data-aos="fade-up"
           >
-            Tentang Kami
+            {introSubtitle}
           </p>
           <h1
             className="text-3xl sm:text-5xl font-bold text-raja-navy text-center mb-6"
             data-aos="fade-up"
             data-aos-delay="100"
           >
-            About Us
+            {introTitle}
           </h1>
           <p
             className="text-slate-600 text-center max-w-2xl mx-auto"
             data-aos="fade-up"
             data-aos-delay="200"
           >
-            PT. RAJA ELEKTRO INC. hadir sebagai mitra pengadaan barang & jasa
-            serta solusi bisnis Anda.
+            {introDescription}
           </p>
         </div>
       </section>
@@ -55,36 +99,18 @@ export default function AboutUs() {
                 className="text-2xl sm:text-3xl font-bold text-raja-navy mb-6"
                 data-aos="fade-up"
               >
-                Siapa Kami
+                {whoTitle}
               </h2>
-              <p
-                className="text-slate-600 mb-4"
-                data-aos="fade-up"
-                data-aos-delay="100"
-              >
-                <strong className="text-slate-800">
-                  PT. RAJA ELEKTRO INC.
-                </strong>{" "}
-                adalah perusahaan yang bergerak di bidang{" "}
-                <strong>Pengadaan Barang & Jasa</strong>. Kami menyediakan
-                layanan konsultasi IT Support, pengadaan melalui INAPROC dan
-                SIPLAH/TOKOLADANG (elektronik, mobiler, jasa IT Support, dan
-                lainnya), pengadaan jasa outsourcing (Satpam, CS, Driver,
-                Resepsionis), biro jasa pendidikan non formal, serta kebutuhan
-                lain yang Anda butuhkan.
-              </p>
-              <p
-                className="text-slate-600"
-                data-aos="fade-up"
-                data-aos-delay="200"
-              >
-                Dengan tagline{" "}
-                <strong className="text-raja-blue">
-                  &quot;Your Business Solution&quot;
-                </strong>
-                , kami berkomitmen menjadi solusi terpercaya untuk institusi dan
-                bisnis dalam memenuhi kebutuhan pengadaan dan layanan pendukung.
-              </p>
+              {whoParagraphs.map((text, idx) => (
+                <p
+                  key={idx}
+                  className="text-slate-600 mb-4 last:mb-0"
+                  data-aos="fade-up"
+                  data-aos-delay={100 + idx * 80}
+                >
+                  {text}
+                </p>
+              ))}
             </div>
             <div className="relative min-w-0 flex justify-center lg:justify-end" data-aos="fade-up" data-aos-delay="200">
               <div className="w-full max-w-96 rounded overflow-hidden border shadow-md border-slate-200">
@@ -123,7 +149,7 @@ export default function AboutUs() {
             Mengapa Memilih Kami
           </h2>
           <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
-            {highlights.map((item, i) => (
+            {highlightItems.map((item, i) => (
               <div
                 key={item}
                 className="flex items-start gap-4 p-5 rounded-xl bg-slate-50 border border-slate-200"
@@ -156,7 +182,7 @@ export default function AboutUs() {
             Dokumen resmi perusahaan tersedia untuk diunduh.
           </p>
           <div className="grid sm:grid-cols-3 gap-4 max-w-4xl mx-auto">
-            {documents.map((doc, i) => (
+            {documentItems.map((doc, i) => (
               <a
                 key={doc.label}
                 href={doc.href}
