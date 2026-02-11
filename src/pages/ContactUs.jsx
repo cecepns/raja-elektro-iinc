@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { Mail, MapPin, Phone, Send } from 'lucide-react'
+import axios from 'axios'
 import { API_BASE } from '../utils/api'
 
 const DEFAULT_CONTACT = {
@@ -26,14 +27,19 @@ export default function ContactUs() {
   const [subjects, setSubjects] = useState(DEFAULT_SUBJECTS)
 
   useEffect(() => {
-    fetch(`${API_BASE}/api/content/contact_info`)
-      .then((res) => (res.ok ? res.json() : null))
-      .then((data) => data && setContact({ ...DEFAULT_CONTACT, ...data }))
+    axios
+      .get(`${API_BASE}/api/content/contact_info`, { withCredentials: false })
+      .then((res) => {
+        if (res?.data) {
+          setContact({ ...DEFAULT_CONTACT, ...res.data })
+        }
+      })
       .catch(() => {})
 
-    fetch(`${API_BASE}/api/content/contact_subjects`)
-      .then((res) => (res.ok ? res.json() : null))
-      .then((data) => {
+    axios
+      .get(`${API_BASE}/api/content/contact_subjects`, { withCredentials: false })
+      .then((res) => {
+        const data = res?.data
         if (Array.isArray(data?.subjects) && data.subjects.length > 0) {
           setSubjects(data.subjects)
         }

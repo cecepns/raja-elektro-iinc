@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import axios from 'axios'
 import { API_BASE } from '../utils/api'
 
 // Definisi key, label, deskripsi, dan contoh struktur JSON
@@ -201,13 +202,14 @@ const CONTENT_DEFS = {
 }
 
 function fetchWithCredentials(path, options = {}) {
-  return fetch(`${API_BASE}${path}`, {
-    credentials: 'include',
+  return axios({
+    url: `${API_BASE}${path}`,
     headers: {
       'Content-Type': 'application/json',
       ...(options.headers || {}),
     },
-    ...options,
+    method: options.method || 'GET',
+    data: options.body,
   })
 }
 
@@ -236,7 +238,7 @@ export default function Admin() {
   useEffect(() => {
     fetchWithCredentials('/api/admin/me')
       .then((res) => {
-        if (res.ok) return res.json()
+        if (res.status === 200) return res.data
         throw new Error('unauthorized')
       })
       .then(() => {
@@ -259,14 +261,13 @@ export default function Admin() {
     setLoading(true)
     fetchWithCredentials('/api/admin/login', {
       method: 'POST',
-      body: JSON.stringify(loginForm),
+      body: loginForm,
     })
-      .then(async (res) => {
-        if (!res.ok) {
-          const data = await res.json().catch(() => ({}))
-          throw new Error(data.error || 'Login gagal')
+      .then((res) => {
+        if (res.status !== 200) {
+          throw new Error(res.data?.error || 'Login gagal')
         }
-        return res.json()
+        return res.data
       })
       .then(() => {
         setIsAuthed(true)
@@ -286,9 +287,8 @@ export default function Admin() {
 
   function loadContentKeys() {
     fetchWithCredentials('/api/content')
-      .then((res) => res.json())
-      .then((data) => {
-        setContentKeys(data)
+      .then((res) => {
+        setContentKeys(res.data)
       })
       .catch((err) => {
         console.error('Failed to load content keys', err)
@@ -297,15 +297,10 @@ export default function Admin() {
 
   function handleSelectKey(key) {
     setSelectedKey(key)
-    fetch(`${API_BASE}/api/content/${encodeURIComponent(key)}`)
+    axios
+      .get(`${API_BASE}/api/content/${encodeURIComponent(key)}`)
       .then((res) => {
-        if (!res.ok) {
-          throw new Error('Not found')
-        }
-        return res.json()
-      })
-      .then((value) => {
-        setEditorValue(JSON.stringify(value, null, 2))
+        setEditorValue(JSON.stringify(res.data, null, 2))
       })
       .catch(() => {
         // Jika belum ada di database, isi dengan contoh / template jika tersedia
@@ -328,13 +323,13 @@ export default function Admin() {
     }
     fetchWithCredentials(`/api/content/${encodeURIComponent(selectedKey)}`, {
       method: 'PUT',
-      body: JSON.stringify(parsed),
+      body: parsed,
     })
       .then((res) => {
-        if (!res.ok) {
+        if (res.status !== 200) {
           throw new Error('Gagal menyimpan')
         }
-        return res.json()
+        return res.data
       })
       .then(() => {
         showAlert('Berhasil disimpan.', 'success')

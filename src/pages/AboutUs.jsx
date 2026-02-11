@@ -5,6 +5,7 @@ import profileOwner from "../assets/profile-owner.jpeg";
 import nibPdf from "../assets/dokumen-pendukung/NIB PT Raja Elektro Inc.pdf";
 import suratPernyataanPdf from "../assets/dokumen-pendukung/surat-pernyataan-perubahan-41250913120262573.pdf";
 import suratSertifikatPdf from "../assets/dokumen-pendukung/surat-sertifikat-perubahan-41250913120262573.pdf";
+import axios from "axios";
 import { API_BASE } from "../utils/api";
 
 const DEFAULT_HIGHLIGHTS = [
@@ -27,24 +28,34 @@ export default function AboutUs() {
   const [docs, setDocs] = useState(null);
 
   useEffect(() => {
-    fetch(`${API_BASE}/api/content/about_intro`)
-      .then((res) => (res.ok ? res.json() : null))
-      .then((data) => data && setIntro(data))
+    axios
+      .get(`${API_BASE}/api/content/about_intro`, { withCredentials: false })
+      .then((res) => res?.data && setIntro(res.data))
       .catch(() => {});
 
-    fetch(`${API_BASE}/api/content/about_who`)
-      .then((res) => (res.ok ? res.json() : null))
-      .then((data) => data && setWho(data))
+    axios
+      .get(`${API_BASE}/api/content/about_who`, { withCredentials: false })
+      .then((res) => res?.data && setWho(res.data))
       .catch(() => {});
 
-    fetch(`${API_BASE}/api/content/about_highlights`)
-      .then((res) => (res.ok ? res.json() : null))
-      .then((data) => data && setHighlights(Array.isArray(data.items) ? data.items : null))
+    axios
+      .get(`${API_BASE}/api/content/about_highlights`, { withCredentials: false })
+      .then((res) => {
+        const data = res?.data;
+        if (Array.isArray(data?.items)) {
+          setHighlights(data.items);
+        }
+      })
       .catch(() => {});
 
-    fetch(`${API_BASE}/api/content/about_documents`)
-      .then((res) => (res.ok ? res.json() : null))
-      .then((data) => data && setDocs(Array.isArray(data.documents) ? data.documents : null))
+    axios
+      .get(`${API_BASE}/api/content/about_documents`, { withCredentials: false })
+      .then((res) => {
+        const data = res?.data;
+        if (Array.isArray(data?.documents)) {
+          setDocs(data.documents);
+        }
+      })
       .catch(() => {});
   }, []);
 

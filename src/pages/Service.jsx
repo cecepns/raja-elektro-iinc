@@ -10,6 +10,7 @@ import {
   ExternalLink,
 } from "lucide-react";
 import LayananBanner from "../assets/layanan-banner-2.png";
+import axios from "axios";
 import { API_BASE } from "../utils/api";
 
 const ICON_MAP = {
@@ -101,19 +102,19 @@ export default function Service() {
   const [catalogs, setCatalogs] = useState(null);
 
   useEffect(() => {
-    fetch(`${API_BASE}/api/content/service_intro`)
-      .then((res) => (res.ok ? res.json() : null))
-      .then((data) => data && setIntro(data))
+    axios
+      .get(`${API_BASE}/api/content/service_intro`, { withCredentials: false })
+      .then((res) => res?.data && setIntro(res.data))
       .catch(() => {});
 
-    fetch(`${API_BASE}/api/content/service_services`)
-      .then((res) => (res.ok ? res.json() : null))
-      .then((data) => setServices(mapServices(data)))
+    axios
+      .get(`${API_BASE}/api/content/service_services`, { withCredentials: false })
+      .then((res) => setServices(mapServices(res?.data)))
       .catch(() => {});
 
-    fetch(`${API_BASE}/api/content/service_catalogs`)
-      .then((res) => (res.ok ? res.json() : null))
-      .then((data) => data && setCatalogs(data))
+    axios
+      .get(`${API_BASE}/api/content/service_catalogs`, { withCredentials: false })
+      .then((res) => res?.data && setCatalogs(res.data))
       .catch(() => {});
   }, []);
 

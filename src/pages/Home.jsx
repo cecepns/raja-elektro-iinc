@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import { Monitor, Package, ShoppingCart, Users, ArrowRight } from "lucide-react";
 import HeroBgImage from "../assets/hero-banner.png";
 import MitraBanner from "../assets/mitra-banner.png";
+import axios from "axios";
 import { API_BASE } from "../utils/api";
 
 const ICON_MAP = {
@@ -39,24 +40,24 @@ export default function Home() {
   const [cta, setCta] = useState(null);
 
   useEffect(() => {
-    fetch(`${API_BASE}/api/content/home_hero`)
-      .then((res) => (res.ok ? res.json() : null))
-      .then((data) => data && setHero(data))
+    axios
+      .get(`${API_BASE}/api/content/home_hero`, { withCredentials: false })
+      .then((res) => res?.data && setHero(res.data))
       .catch(() => {});
 
-    fetch(`${API_BASE}/api/content/home_services_preview`)
-      .then((res) => (res.ok ? res.json() : null))
-      .then((data) => data && setServicesPreview(mapServices(data)))
+    axios
+      .get(`${API_BASE}/api/content/home_services_preview`, { withCredentials: false })
+      .then((res) => res?.data && setServicesPreview(mapServices(res.data)))
       .catch(() => {});
 
-    fetch(`${API_BASE}/api/content/home_mitra`)
-      .then((res) => (res.ok ? res.json() : null))
-      .then((data) => data && setMitra(data))
+    axios
+      .get(`${API_BASE}/api/content/home_mitra`, { withCredentials: false })
+      .then((res) => res?.data && setMitra(res.data))
       .catch(() => {});
 
-    fetch(`${API_BASE}/api/content/home_cta`)
-      .then((res) => (res.ok ? res.json() : null))
-      .then((data) => data && setCta(data))
+    axios
+      .get(`${API_BASE}/api/content/home_cta`, { withCredentials: false })
+      .then((res) => res?.data && setCta(res.data))
       .catch(() => {});
   }, []);
 

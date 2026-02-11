@@ -1,5 +1,4 @@
 import express from 'express'
-import session from 'express-session'
 import cors from 'cors'
 import dotenv from 'dotenv'
 import mysql from 'mysql2/promise'
@@ -10,30 +9,15 @@ dotenv.config()
 const app = express()
 
 const PORT = process.env.PORT || 3001
-const SESSION_SECRET = process.env.SESSION_SECRET || 'change-this-secret'
 
 // Basic CORS – allow frontend on same machine (Vite default: 5173)
 app.use(
   cors({
     origin: ['http://localhost:5173', 'http://127.0.0.1:5173'],
-    credentials: true,
   }),
 )
 
 app.use(express.json())
-
-app.use(
-  session({
-    secret: SESSION_SECRET,
-    resave: false,
-    saveUninitialized: false,
-    cookie: {
-      httpOnly: true,
-      secure: false,
-      sameSite: 'lax',
-    },
-  }),
-)
 
 // MySQL pool
 const pool = mysql.createPool({
@@ -64,10 +48,9 @@ async function ensureDefaultAdmin() {
   console.log('Default admin user created with email', email)
 }
 
+// Untuk saat ini, nonaktifkan proteksi session dan izinkan semua request.
+// Jika nanti ingin pakai auth lagi, bisa ganti implementasi ini.
 function requireAuth(req, res, next) {
-  if (!req.session || !req.session.adminId) {
-    return res.status(401).json({ error: 'Unauthorized' })
-  }
   next()
 }
 
@@ -97,9 +80,7 @@ app.post('/api/admin/login', async (req, res) => {
       return res.status(401).json({ error: 'Invalid credentials' })
     }
 
-    req.session.adminId = user.id
-    req.session.adminEmail = user.email
-
+    // Tanpa session: cukup kirim data user ke frontend
     res.json({ id: user.id, email: user.email, name: user.name })
   } catch (err) {
     console.error('Login error', err)
@@ -108,19 +89,14 @@ app.post('/api/admin/login', async (req, res) => {
 })
 
 app.post('/api/admin/logout', (req, res) => {
-  req.session?.destroy(() => {
-    res.json({ success: true })
-  })
+  // Tanpa session, logout cukup mengembalikan success
+  res.json({ success: true })
 })
 
+// Tanpa mekanisme sesi di server, endpoint ini selalu mengembalikan unauthorized.
+// Frontend akan menilai login hanya dari state lokal setelah /login sukses.
 app.get('/api/admin/me', (req, res) => {
-  if (!req.session || !req.session.adminId) {
-    return res.status(401).json({ error: 'Unauthorized' })
-  }
-  res.json({
-    id: req.session.adminId,
-    email: req.session.adminEmail,
-  })
+  return res.status(401).json({ error: 'Unauthorized' })
 })
 
 // Content API
